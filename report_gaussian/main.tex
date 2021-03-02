@@ -1,0 +1,141 @@
+\documentclass[14pt,a4paper,article]{ncc}
+\usepackage[a4paper, mag=1000, left=2.5cm, right=1cm, top=2cm, bottom=2cm, headsep=0.7cm, footskip=1cm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[english,russian]{babel}
+\usepackage{indentfirst}
+%\usepackage[dvipsnames]{xcolor}
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsmath, etoolbox}
+\usepackage{graphicx}
+\usepackage{float}
+\graphicspath{figure}
+\DeclareGraphicsExtensions{.png,.jpg, .jpeg}
+
+%\bibliographystyle{gost-numeric.bbx}
+\usepackage{csquotes}
+\usepackage[backend=biber]{biblatex}
+\addbibresource{literature.bib}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhead[LE,RO]{\thepage}
+\fancyfoot{} 
+
+\usepackage{listings}
+
+%\patchcmd\subequations
+%{\theparentequation\alph{equation}}
+%{\subequationsformat}
+%{}{}
+
+%\newcommand{\subequationsformat}{\theparentequation.\arabic{equation}}
+
+\numberwithin{equation}{subsection}
+
+
+\usepackage[colorlinks]{hyperref}
+\hypersetup{linkcolor=black}
+
+\begin{document}
+
+% Title page 
+\begin{titlepage}
+    \begin{center}
+        \textsc{
+            Санкт-Петербургский политехнический университет имени Петра Великого \\[5mm]
+            Институт прикладной математики и механики\\[2mm]
+            Кафедра прикладной математики
+        }   
+        \vfill
+        \textbf{\large
+            Машина опорных векторов\\
+            Доклад на тему: \\[3mm]
+            ``Асимптотическое поведение LOO-ошибки SV-классификатора с гауссовым ядром''
+            %по курсовой работе \\[3mm]
+        }                
+    \end{center}
+
+    \vfill
+    \hfill
+    \begin{minipage}{0.5\textwidth}
+        Выполнил: \\[2mm]   
+		Студент: Дамаскинский Константин \\
+		Группа: 3630102/70201\\
+    \end{minipage}
+
+
+    \vfill
+    \begin{center}
+        \theyear\ г.
+    \end{center}
+\end{titlepage}
+
+\tableofcontents
+\listoffigures
+%\listoftables
+\newpage
+
+\section{Постановка задачи}
+
+\subsection{Общая формулировка}
+Пусть дана тренировочная последовательность $\{x_i, y_i\}, x_i \in \mathbb{R^n}, \; y_i \in \{1, -1\}, \; i \in \overline{1,l}$. Тогда настройка машины опорных векторов состоит в решении следующей задачи оптимизации:
+
+\begin{equation}
+\min_{w, b, \xi} \frac{1}{2}w^Tw + C \displaystyle \sum_{i = 1}^{l}\xi_i
+\end{equation}
+при условии
+
+\begin{align}
+y_i(w^T z_i + b) \geq 1 - \xi_i \\
+\xi_i \geq 0, i \in \overline{1,l}
+\end{align}
+где $z_i= \varphi(x_i)$ -- результат отображения тренировочного вектора в пространство размерности $\textrm{dim} w$, $C > 0$ -- штрафной параметр.
+
+К данной задаче квадратичного программирования строится двойственная задача:
+
+\begin{equation}
+\min_{\alpha} F(\alpha) = \frac{1}{2}\alpha^TQ\alpha -e^T \alpha
+\end{equation}
+
+при условии
+\begin{align}
+0 \leq \alpha_i \leq C \\
+y^T \alpha = 0, i \in \overline{1,l}
+\end{align}
+где $e=(1, \dots, 1)^T$, $Q$ -- положительно полуопределённая матрица размера $l \times l$, задаваемая по формуле: $Q_{ij}=y_i K(x_i, x_j) y_j, K(x_i, x_j) = \varphi^T(x_i) \varphi(x_j)$ -- \textit{ядро}. Тогда $w= \displaystyle \sum_{i = 1}^{l} \alpha_i y_i \varphi(x_i)$.
+
+В данном докладе мы рассмотрим настройку машины опорных векторов с гауссовским ядром:
+\begin{equation}
+K(\tilde{x}, \overline{x})= \exp \left( \frac{-\| \tilde{x} - \overline{x} \|^2}{2 \sigma ^2} \right)
+\end{equation}
+
+%\subsection{Экспресс-анализ поведения SVM в крайних случаях $C$ и $\sigma$}
+
+%Будем оценивать поведение машины в крайних возможных значениях штрафного параметра $C \; (C \rightarrow 0, C \rightarrow \infty)$ и параметра рассеяния $\sigma \; (\sigma^2 \rightarrow 0, \sigma^2 \rightarrow \infty)$.
+
+%Экспресс-анализ поставленной задачи из соображений здравого смысла позволяет сделать следующие заключения:
+
+%\begin{itemize}
+%	\item Сильное недообучение происходит, когда:
+%	\begin{enumerate}
+%		\item параметр $\sigma$ конечный и $C \rightarrow 0$
+%		\item $\sigma \rightarrow 0$ и $C$ -- конечный и достаточно маленький
+%		\item $\sigma \rightarrow \infty$ и $C$ -- конечный
+%	\end{enumerate}
+
+%	\item Сильное переобучение происходит, когда $\sigma \rightarrow 0$ и $C$ очень большой
+%	\item Если $\sigma$ конечный и $C \rightarrow \infty$, то классификатор хорошо разделяет обучающую выборку на два класса, следовательно, в случае зашумлённой обучающей выборки мы получим переобучение
+%TODO C = tilde{C} sigma^2
+%\end{itemize}
+
+\subsection{LOO-ошибка}
+
+Асимптотическое поведение ошибки обучения SVM можно исследовать путём анализа loo-ошибки (leave-one-out): машину обучают на всей тренировочной последовательности без $i$-го элемента, затем подают на вход $i$-й элемент и проверяют, правильно ли машина его классифицировала. Данную операцию проделывают для всех элементов тренировочной выборки. Доля неверно классифицированных элементов ТП и называется loo-ошибкой.
+
+\printbibliography
+%\addcontentsline{toc}{section}{Литература}
+
+
+\end{document}
